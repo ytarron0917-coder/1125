@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0b0e14" />
+  <title>美股總經 × 加密貨幣回穩監測儀 v2</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --bg-elev: #121722;
+      --bg-card: #171d2b;
+      --bg-card-2: #1c2436;
+      --border: #252f45;
+      --text: #eef2f9;
+      --text-dim: #94a3b8;
+      --text-mute: #64748b;
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.14);
+      --yellow: #f59e0b;
+      --yellow-bg: rgba(245, 158, 11, 0.15);
+      --orange: #f97316;
+      --orange-bg: rgba(249, 115, 22, 0.15);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.15);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.15);
+      --radius: 14px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      overscroll-behavior-y: contain;
+    }
+
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+    /* Top Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(11, 14, 20, 0.93);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+      padding-top: calc(10px + env(safe-area-inset-top, 0px));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .brand { display: flex; flex-direction: column; min-width: 0; }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+      flex-wrap: wrap;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: var(--text-mute);
+    }
+    .dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 1.8s infinite; }
+    .dot.warn { background: var(--yellow); }
+    .dot.err { background: var(--red); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.55; transform: scale(0.85); }
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 6px; }
+    .icon-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      height: 36px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .icon-btn:active { transform: scale(0.96); background: var(--bg-card-2); }
+    .icon-btn.spinning svg { animation: spin 0.9s linear infinite; }
+    .icon-btn.accent { border-color: rgba(59,130,246,0.55); background: rgba(59,130,246,0.14); color: #93c5fd; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 12px 12px calc(78px + var(--safe-bottom));
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--bg-card-2);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .pill.green { background: var(--green-bg); color: var(--green); border-color: rgba(16,185,129,0.35); }
+    .pill.yellow { background: var(--yellow-bg); color: var(--yellow); border-color: rgba(245,158,11,0.35); }
+    .pill.orange { background: var(--orange-bg); color: var(--orange); border-color: rgba(249,115,22,0.35); }
+    .pill.red { background: var(--red-bg); color: var(--red); border-color: rgba(239,68,68,0.35); }
+    .pill.blue { background: var(--blue-bg); color: var(--blue); border-color: rgba(59,130,246,0.35); }
+
+    /* Hero Gauge */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+    @media (max-width: 380px) {
+      .hero-grid { grid-template-columns: 120px 1fr; gap: 10px; }
+    }
+    .gauge-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto; }
+    @media (max-width: 380px) { .gauge-wrap { width: 120px; height: 120px; } }
+    .gauge-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .gauge-bg { fill: none; stroke: #232c40; stroke-width: 12; }
+    .gauge-fg {
+      fill: none;
+      stroke: var(--yellow);
+      stroke-width: 12;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.7s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.4s ease;
+    }
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .gauge-score { font-size: 36px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+    .gauge-label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+    .hero-info { min-width: 0; }
+    .verdict-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+    .verdict-desc { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5; }
+
+    .pillar-list { display: flex; flex-direction: column; gap: 7px; }
+    .pillar-row { display: flex; flex-direction: column; gap: 3px; }
+    .pillar-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
+    .pillar-top strong { color: var(--text); }
+    .bar-track { height: 6px; background: #222b3e; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease, background 0.3s ease; }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .step-box {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 7px;
+      text-align: center;
+    }
+    .step-box.ok { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.08); }
+    .step-box.mid { border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.07); }
+    .step-box.bad { border-color: rgba(239,68,68,0.45); background: rgba(239,68,68,0.07); }
+    .step-num { font-size: 10px; color: var(--text-mute); font-weight: 700; }
+    .step-name { font-size: 11.5px; font-weight: 700; margin: 2px 0; }
+    .step-state { font-size: 10.5px; font-weight: 600; }
+
+    /* Channel Status Strip */
+    .channel-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(148,163,184,0.18);
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ch-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .ch-tag {
+      font-size: 10.5px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .ch-tag.ok { border-color: rgba(16,185,129,0.45); color: var(--green); }
+    .ch-tag.fail { border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+
+    /* Indicator Cards */
+    .ind-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+    @media (max-width: 350px) { .ind-grid { grid-template-columns: 1fr; } }
+    .ind-card {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ind-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+    .ind-sym { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .ind-name { font-size: 10.5px; color: var(--text-dim); margin-top: 1px; }
+    .ind-pts { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: var(--bg-card-2); white-space: nowrap; }
+    .ind-mid { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+    .ind-price { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+    .ind-chg { font-size: 12px; font-weight: 700; }
+    .up { color: var(--green); }
+    .down { color: var(--red); }
+    .flat { color: var(--text-dim); }
+
+    .src-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(59,130,246,0.16);
+      color: #93c5fd;
+    }
+    .src-badge.gas { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+    .src-badge.manual { background: rgba(245,158,11,0.2); color: #fcd34d; }
+
+    .range-wrap { display: flex; flex-direction: column; gap: 3px; }
+    .range-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-mute); }
+    .range-track { position: relative; height: 5px; background: #232c40; border-radius: 999px; }
+    .range-fill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 999px; }
+    .range-thumb {
+      position: absolute; top: 50%; width: 9px; height: 9px; border-radius: 50%;
+      background: #fff; border: 2px solid var(--blue); transform: translate(-50%, -50%);
+      box-shadow: 0 0 6px rgba(0,0,0,0.6);
+    }
+
+    .ind-foot {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 10.5px; color: var(--text-dim);
+      padding-top: 4px; border-top: 1px dashed rgba(148,163,184,0.14); gap: 4px;
+    }
+    .mini-edit-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+      border-radius: 6px; padding: 2px 6px; font-size: 10px; cursor: pointer;
+    }
+    .mini-edit-btn:active { background: var(--bg-card-2); color: var(--text); }
+
+    .crypto-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
+    .metric-cell { background: var(--bg-card); border: 1px solid rgba(37,47,69,0.8); border-radius: 8px; padding: 6px 7px; }
+    .metric-k { font-size: 10px; color: var(--text-mute); }
+    .metric-v { font-size: 12px; font-weight: 700; margin-top: 2px; }
+
+    /* Banner */
+    .notice {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.35);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .notice.warn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.4); }
+    .notice-row { display: flex; align-items: flex-start; gap: 8px; }
+    .notice-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cta-mini {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 11px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .cta-mini.ghost {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+      background: rgba(15, 20, 30, 0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      padding: 6px 8px calc(6px + var(--safe-bottom));
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .nav-btn {
+      background: transparent; border: none; color: var(--text-mute);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; padding: 6px 2px; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;
+    }
+    .nav-btn.active { color: var(--text); background: rgba(59,130,246,0.14); }
+    .nav-btn.active svg { color: var(--blue); }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.74);
+      display: none; align-items: flex-end; justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-sheet {
+      width: 100%; max-width: 540px; max-height: 88vh; overflow-y: auto;
+      background: var(--bg-card); border-top: 1px solid var(--border);
+      border-radius: 18px 18px 0 0; padding: 16px 16px calc(22px + var(--safe-bottom));
+    }
+    .modal-title {
+      font-size: 16px; font-weight: 800; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 5px; font-weight: 600; }
+    .field input, .field select, .field textarea {
+      width: 100%; background: var(--bg-elev); border: 1px solid var(--border);
+      color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; outline: none;
+      font-family: inherit;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--blue); }
+    .code-box {
+      background: #090d13;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      color: #a7f3d0;
+      max-height: 150px;
+      overflow: auto;
+      white-space: pre;
+      margin-bottom: 8px;
+    }
+    .step-list {
+      margin: 0 0 12px 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.65;
+    }
+    .step-list strong { color: var(--text); }
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    .btn {
+      flex: 1; height: 42px; border-radius: 10px; border: 1px solid var(--border);
+      font-size: 13.5px; font-weight: 700; cursor: pointer;
+    }
+    .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn.green { background: var(--green); border-color: var(--green); color: #052e16; }
+    .btn.ghost { background: var(--bg-elev); color: var(--text); }
+    .btn.danger { background: var(--red-bg); border-color: rgba(239,68,68,0.4); color: var(--red); }
+
+    .tv-box { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--bg-elev); margin-top: 8px; }
+    .seg-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+    .seg-btn {
+      background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim);
+      border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer;
+    }
+    .seg-btn.active { background: var(--blue-bg); border-color: var(--blue); color: var(--text); }
+
+    table.rules { width: 100%; border-collapse: collapse; font-size: 12px; }
+    table.rules th, table.rules td { padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    table.rules th { color: var(--text-dim); font-weight: 700; }
+    .small-note { font-size: 11px; color: var(--text-dim); line-height: 1.55; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Top Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">
+        <span>回穩做多監測儀</span>
+        <span class="pill blue" id="completenessPill">連線中...</span>
+      </div>
+      <div class="brand-sub">
+        <span><i class="dot" id="wsDot"></i> 幣安</span>
+        <span><i class="dot" id="macroDot"></i> 美股總經</span>
+        <span id="sessionBadge" style="color:#93c5fd"></span>
+        <span id="lastUpdate" class="num">--:--:--</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn accent" onclick="openChannelModal()" title="免費數據通道設定">
+        <span>免費通道</span>
+      </button>
+      <button class="icon-btn" id="refreshBtn" onclick="refreshAll(true)" title="立即刷新">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+      </button>
+      <button class="icon-btn" onclick="openSettings()" title="防守位設定">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- TAB 1: OVERVIEW -->
+    <section id="tab-overview" class="tab-panel active">
+      <div id="proxyBanner" class="notice warn" style="display:none;">
+        <div class="notice-row">
+          <div>⚠️</div>
+          <div id="proxyBannerText">部分美股/總經指標未能由免設定通道取得。建議花 <strong>1 分鐘</strong> 貼上免費 Google Apps Script（永久不限流、零 CORS）或填入免費 Twelve Data / Finnhub API Key，即可 11/11 滿血即時運作。</div>
+        </div>
+        <div class="notice-actions">
+          <button class="cta-mini" onclick="openChannelModal()">⚡ 開啟 1 分鐘免費通道設定</button>
+          <button class="cta-mini ghost" onclick="refreshAll(true)">重新嘗試連線</button>
+        </div>
+      </div>
+
+      <!-- Hero Score Card -->
+      <div class="card">
+        <div class="hero-grid">
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 140 140">
+              <circle class="gauge-bg" cx="70" cy="70" r="56"></circle>
+              <circle class="gauge-fg" id="gaugeArc" cx="70" cy="70" r="56"
+                      stroke-dasharray="351.86" stroke-dashoffset="351.86"></circle>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-score num" id="totalScore">--</div>
+              <div class="gauge-label">回穩分數 / 100</div>
+            </div>
+          </div>
+
+          <div class="hero-info">
+            <div class="verdict-title" id="verdictTitle">同步即時數據中...</div>
+            <div class="verdict-desc" id="verdictDesc">正透過 TradingView 直連、CNBC 批次與幣安永續合約同步報價。</div>
+
+            <div class="pillar-list">
+              <div class="pillar-row">
+                <div class="pillar-top">
+                  <span>1. 總經壓力鬆綁 (30分)</span>
+                  <strong class="num" id="pMacroScore">-- / 30</strong>
+                </div>
+                <div class="bar-track"><div class="bar-fill" id="pMacroBar" style="width:0%"></div></div>
+              </div>
+              <div class="pillar-row">
+                <div class="pillar-top">
+                  <span>2. 美股風險回升 (30分)</span>
+                  <strong class="num" id="pEqScore">-- / 30</strong>
+                </div>
+                <div class="bar-track"><div class="bar-fill" id="pEqBar" style="width:0%"></div></div>
+              </div>
+              <div class="pillar-row">
+                <div class="pillar-top">
+                  <span>3. BTC+ETH結構 (40分)</span>
+                  <strong class="num" id="pCryptoScore">-- / 40</strong>
+                </div>
+                <div class="bar-track"><div class="bar-fill" id="pCryptoBar" style="width:0%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Step Confirmation -->
+        <div class="step-grid">
+          <div class="step-box" id="step1Box">
+            <div class="step-num">STEP 1</div>
+            <div class="step-name">壓力源回落</div>
+            <div class="step-state" id="step1State">等待中</div>
+          </div>
+          <div class="step-box" id="step2Box">
+            <div class="step-num">STEP 2</div>
+            <div class="step-name">美股止跌收腳</div>
+            <div class="step-state" id="step2State">等待中</div>
+          </div>
+          <div class="step-box" id="step3Box">
+            <div class="step-num">STEP 3</div>
+            <div class="step-name">幣圈守穩轉強</div>
+            <div class="step-state" id="step3State">等待中</div>
+          </div>
+        </div>
+
+        <!-- Free Channel Diagnostics Strip -->
+        <div class="channel-strip">
+          <div class="ch-tags" id="channelDiagTags">
+            <span class="ch-tag">通道檢測中...</span>
+          </div>
+          <button class="mini-edit-btn" onclick="openChannelModal()">管理免費通道</button>
+        </div>
+      </div>
+
+      <!-- Crypto Core Quick Strip -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚡ 加密核心結構（幣安永續直連）</div>
+          <span class="pill" id="ethBtcPill">ETH/BTC --</span>
+        </div>
+        <div class="ind-grid" id="overviewCryptoGrid"></div>
+      </div>
+
+      <!-- Macro Inverse Pressure -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧯 反向壓力源（見頂回落＝加分）</div>
+          <span class="pill">權重 30 分</span>
+        </div>
+        <div class="ind-grid" id="overviewMacroGrid"></div>
+      </div>
+
+      <!-- US Equities Risk-On -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🚀 美股與幣股引擎（收腳翻紅＝加分）</div>
+          <span class="pill">權重 30 分</span>
+        </div>
+        <div class="ind-grid" id="overviewEqGrid"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CRYPTO DETAIL -->
+    <section id="tab-crypto" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">₿ BTCUSDT 永續結構拆解</div>
+          <span class="pill num" id="btcDetailPts">-- / 25 分</span>
+        </div>
+        <div id="btcDetailBody"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Ξ ETHUSDT 永續結構拆解</div>
+          <span class="pill num" id="ethDetailPts">-- / 15 分</span>
+        </div>
+        <div id="ethDetailBody"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📈 TradingView 即時線圖（15分）</div>
+        </div>
+        <div class="seg-row" id="tvChartBtns">
+          <button class="seg-btn active" onclick="loadTvChart('BINANCE:BTCUSDT.P', this)">BTC 永續</button>
+          <button class="seg-btn" onclick="loadTvChart('BINANCE:ETHUSDT.P', this)">ETH 永續</button>
+          <button class="seg-btn" onclick="loadTvChart('BINANCE:1000PEPEUSDT.P', this)">1000PEPE</button>
+          <button class="seg-btn" onclick="loadTvChart('NASDAQ:QQQ', this)">QQQ</button>
+          <button class="seg-btn" onclick="loadTvChart('TVC:DXY', this)">DXY</button>
+          <button class="seg-btn" onclick="loadTvChart('TVC:US02Y', this)">US02Y</button>
+          <button class="seg-btn" onclick="loadTvChart('TVC:VIX', this)">VIX</button>
+        </div>
+        <div class="tv-box" id="tvChartContainer" style="height:360px;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: MACRO & TV QUOTES -->
+    <section id="tab-macro" class="tab-panel">
+      <div class="notice">
+        <div class="notice-row">
+          <div>📡</div>
+          <div>此分頁內嵌 <strong>TradingView 官方即時報價牆</strong>（免設定、無 CORS 限制），方便您核對盤口真實點位。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 美股 × 債息 × 美元 × 幣股即時看板</div>
+          <span class="pill green">TradingView 官方直連</span>
+        </div>
+        <div class="tv-box" id="tvMacroTable" style="height:520px;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SCORING RULES -->
+    <section id="tab-rules" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧮 回穩分數評分標準（滿分 100）</div>
+        </div>
+        <table class="rules">
+          <thead>
+            <tr><th>分數區間</th><th>燈號判讀</th><th>實戰操作指引</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num"><strong>80 – 100</strong></td>
+              <td><span class="pill green">強勢回穩</span></td>
+              <td>壓力源明確回落、美股翻強、BTC/ETH 守穩轉強，<strong>右側做多勝率最高</strong>。</td>
+            </tr>
+            <tr>
+              <td class="num"><strong>65 – 79</strong></td>
+              <td><span class="pill yellow">初步止跌</span></td>
+              <td>賣壓降溫出現收腳，可<strong>輕倉分批試多</strong>並設好硬止損。</td>
+            </tr>
+            <tr>
+              <td class="num"><strong>45 – 64</strong></td>
+              <td><span class="pill orange">多空拉鋸</span></td>
+              <td>美股與總經訊號打架（易畫門掃損），<strong>觀望為主</strong>。</td>
+            </tr>
+            <tr>
+              <td class="num"><strong>0 – 44</strong></td>
+              <td><span class="pill red">賣壓主導</span></td>
+              <td>殖利率/美元/VIX 續強或幣價破位，<strong>嚴禁接飛刀</strong>。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔌 v2 四層免費數據管線（全自動切換）</div>
+        </div>
+        <ol class="step-list" style="margin-bottom:0;">
+          <li><strong>第 1 層（最穩・推薦）Google Apps Script 個人雲端中繼</strong>：免費永久 20,000 次/日，Google 伺服器端一次抓取 TV＋CNBC＋Yahoo，徹底根治手機 CORS 阻擋。</li>
+          <li><strong>第 2 層（免設定直連）TradingView Global Scanner API</strong>：瀏覽器無預檢 POST 一次批量抓齊 9 項美股與總經指標，免 Key、免代理。</li>
+          <li><strong>第 3 層（免設定備援）CNBC 單次批次報價 API</strong>：1 次請求抓全部 9 檔（含美股盤前/盤後報價），避免公共代理限流。</li>
+          <li><strong>第 4 層（選配免費 Key / Yahoo 補洞）</strong>：支援免費 Twelve Data（800 次/日）或 Finnhub（60 次/分）官方直連，加上 Yahoo Finance 單檔補缺。</li>
+        </ol>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Mobile Tab Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('overview', this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+      <span>回穩總覽</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('crypto', this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 8h4a2 2 0 0 1 0 4h-4v4h4.5a2 2 0 0 0 0-4"/></svg>
+      <span>BTC / ETH</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('macro', this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>美股總經</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('rules', this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span>管線與規則</span>
+    </button>
+  </nav>
+
+  <!-- FREE DATA CHANNEL WIZARD MODAL -->
+  <div class="modal-backdrop" id="channelModal" onclick="if(event.target===this) closeModal('channelModal')">
+    <div class="modal-sheet">
+      <div class="modal-title">
+        <span>🔌 免費數據通道設定（零 CORS）</span>
+        <button class="mini-edit-btn" onclick="closeModal('channelModal')">關閉</button>
+      </div>
+
+      <div style="font-size:13px;font-weight:800;margin-bottom:6px;color:var(--green);">方案 A（最推薦・永久免費不限流）：Google Apps Script 專屬 API</div>
+      <ol class="step-list">
+        <li>打開 <strong>script.google.com</strong> → 點「新增專案」→ 刪除原本文字，點下方按鈕複製腳本並貼上。</li>
+        <li>點右上角「<strong>部署</strong>」→「新增部署作業」→ 類型選「<strong>網頁應用程式</strong>」。</li>
+        <li>「執行身分」選「<strong>我</strong>」，「誰可以存取」選「<strong>所有人</strong>」→ 點部署並授權。</li>
+        <li>複製產生的 <code>https://script.google.com/macros/s/.../exec</code> 網址貼在下方即可永久直連！</li>
+      </ol>
+
+      <div class="code-box" id="gasCodePreview"></div>
+      <button class="btn green" style="width:100%;height:38px;margin-bottom:12px;" onclick="copyGasCode()" id="copyGasBtn">📋 一鍵複製 Google Apps Script 程式碼</button>
+
+      <div class="field">
+        <label>貼上您的 Google Apps Script 網頁應用程式網址（優先使用）</label>
+        <input type="url" id="chGasUrl" placeholder="https://script.google.com/macros/s/xxxxx/exec" />
+      </div>
+
+      <hr class="divider" />
+
+      <div style="font-size:13px;font-weight:800;margin-bottom:6px;color:#93c5fd;">方案 B（選配・官方免費 API Key 直連）</div>
+      <p class="small-note" style="margin-top:0;">
+        不想用 Google 腳本也可填免費 API Key（皆支援瀏覽器直連）：<strong>Twelve Data</strong>（免費 800 次/日）可查全部標的，<strong>Finnhub</strong>（免費 60 次/分）可查 QQQ / IWM / MSTR / COIN / IBIT 即時盤口。
+      </p>
+      <div class="field">
+        <label>Twelve Data 免費 API Key（twelvedata.com 免費註冊）</label>
+        <input type="text" id="chTwelveKey" placeholder="選填，例如 1a2b3c4d5e..." />
+      </div>
+      <div class="field">
+        <label>Finnhub 免費 API Key（finnhub.io 免費註冊）</label>
+        <input type="text" id="chFinnhubKey" placeholder="選填，例如 cxxxxxxxxxxxxx" />
+      </div>
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="closeModal('channelModal')">取消</button>
+        <button class="btn primary" onclick="saveChannels()">儲存並立即抓取</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeModal('settingsModal')">
+    <div class="modal-sheet">
+      <div class="modal-title">
+        <span>⚙️ 關鍵防守位與刷新頻率</span>
+        <button class="mini-edit-btn" onclick="closeModal('settingsModal')">關閉</button>
+      </div>
+      <div class="field">
+        <label>BTC 短線防守位 (USDT)</label>
+        <input type="number" id="cfgBtcSupport" step="100" />
+      </div>
+      <div class="field">
+        <label>BTC 強勢收復位 (USDT)</label>
+        <input type="number" id="cfgBtcReclaim" step="100" />
+      </div>
+      <div class="field">
+        <label>ETH 短線防守位 (USDT)</label>
+        <input type="number" id="cfgEthSupport" step="10" />
+      </div>
+      <div class="field">
+        <label>ETH 強勢收復位 (USDT)</label>
+        <input type="number" id="cfgEthReclaim" step="10" />
+      </div>
+      <div class="field">
+        <label>自動刷新頻率（總經與K線結構）</label>
+        <select id="cfgInterval">
+          <option value="30">每 30 秒</option>
+          <option value="60">每 60 秒（推薦省電）</option>
+          <option value="120">每 2 分鐘</option>
+          <option value="0">僅手動刷新（幣安價格仍為即時WS）</option>
+        </select>
+      </div>
+      <div class="btn-row">
+        <button class="btn ghost" onclick="resetDefaults()">還原預設</button>
+        <button class="btn primary" onclick="saveSettings()">儲存並重算</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Override Modal -->
+  <div class="modal-backdrop" id="manualModal" onclick="if(event.target===this) closeModal('manualModal')">
+    <div class="modal-sheet">
+      <div class="modal-title">
+        <span id="manualTitle">手動校準報價</span>
+        <button class="mini-edit-btn" onclick="closeModal('manualModal')">關閉</button>
+      </div>
+      <p class="small-note" style="margin-top:0;">
+        可對照「美股總經」分頁的 TradingView 即時報價手動校準；若已設定免費通道則會自動更新，不需手動輸入。
+      </p>
+      <input type="hidden" id="manualKey" />
+      <div class="field">
+        <label>最新價格 / 殖利率</label>
+        <input type="number" id="manualPrice" step="any" />
+      </div>
+      <div class="field">
+        <label>當日漲跌幅 (%)</label>
+        <input type="number" id="manualChg" step="any" />
+      </div>
+      <div class="field">
+        <label>盤中相對位置 (0% = 盤中最低點，100% = 盤中最高點)</label>
+        <input type="range" id="manualPos" min="0" max="100" value="50" oninput="document.getElementById('manualPosVal').textContent=this.value+'%'" />
+        <div class="small-note">目前設定：<strong id="manualPosVal">50%</strong></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn danger" onclick="clearManual()">清除手動</button>
+        <button class="btn primary" onclick="saveManual()">套用計算</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const GAS_SCRIPT_TEMPLATE = `function doGet(e) {
+  var result = { ok: true, ts: Date.now(), data: {}, errors: [] };
+
+  // 1) TradingView Scanner (1 POST fetches all 9 indicators)
+  try {
+    var tvPayload = {
+      symbols: {
+        tickers: [
+          "TVC:DXY", "TVC:US10Y", "TVC:US02Y", "TVC:VIX",
+          "CME_MINI:NQ1!", "NASDAQ:QQQ", "AMEX:IWM",
+          "NASDAQ:MSTR", "NASDAQ:COIN", "NASDAQ:IBIT"
+        ],
+        query: { types: [] }
+      },
+      columns: ["close", "change", "high", "low", "open", "premarket_close", "premarket_change", "postmarket_close", "postmarket_change"]
+    };
+    var tvRes = UrlFetchApp.fetch("https://scanner.tradingview.com/global/scan", {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(tvPayload),
+      muteHttpExceptions: true
+    });
+    if (tvRes.getResponseCode() === 200) {
+      var tvJson = JSON.parse(tvRes.getContentText());
+      var mapTv = {
+        "TVC:DXY": "DXY", "TVC:US10Y": "US10Y", "TVC:US02Y": "US02Y", "TVC:VIX": "VIX",
+        "CME_MINI:NQ1!": "NQ", "NASDAQ:QQQ": "QQQ_FB", "AMEX:IWM": "IWM",
+        "NASDAQ:MSTR": "MSTR", "NASDAQ:COIN": "COIN", "NASDAQ:IBIT": "IBIT"
+      };
+      (tvJson.data || []).forEach(function(item) {
+        var k = mapTv[item.s];
+        var d = item.d || [];
+        if (k && d[0] != null) {
+          var price = Number(d[0]);
+          var chgPct = Number(d[1] || 0);
+          var high = d[2] != null ? Number(d[2]) : price;
+          var low = d[3] != null ? Number(d[3]) : price;
+          var preP = d[5] != null ? Number(d[5]) : null;
+          var preC = d[6] != null ? Number(d[6]) : null;
+          var postP = d[7] != null ? Number(d[7]) : null;
+          var postC = d[8] != null ? Number(d[8]) : null;
+          result.data[k] = {
+            price: price, chgPct: chgPct, high: high, low: low,
+            prePrice: preP, preChg: preC, postPrice: postP, postChg: postC,
+            source: "GAS·TV"
+          };
+        }
+      });
+      if (!result.data["NQ"] && result.data["QQQ_FB"]) {
+        result.data["NQ"] = result.data["QQQ_FB"];
+        result.data["NQ"].usedFallback = "QQQ";
+      }
+      delete result.data["QQQ_FB"];
+    }
+  } catch (err) { result.errors.push("TV:" + err); }
+
+  // 2) CNBC Batch Quote (1 GET for any missing indicators + extended hours)
+  var allKeys = ["DXY","US10Y","US02Y","VIX","NQ","IWM","MSTR","COIN","IBIT"];
+  var missing = allKeys.filter(function(k) { return !result.data[k]; });
+  if (missing.length > 0) {
+    try {
+      var cnbcUrl = "https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=.DXY|US10Y|US2Y|.VIX|@ND.1|QQQ|IWM|MSTR|COIN|IBIT&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json";
+      var cRes = UrlFetchApp.fetch(cnbcUrl, { muteHttpExceptions: true });
+      if (cRes.getResponseCode() === 200) {
+        var cJson = JSON.parse(cRes.getContentText());
+        var list = (cJson.FormattedQuoteResult && cJson.FormattedQuoteResult.FormattedQuote) || [];
+        if (!Array.isArray(list)) list = [list];
+        var mapC = {
+          ".DXY": "DXY", "US10Y": "US10Y", "US2Y": "US02Y", ".VIX": "VIX",
+          "@ND.1": "NQ", "QQQ": "QQQ_FB", "IWM": "IWM", "MSTR": "MSTR", "COIN": "COIN", "IBIT": "IBIT"
+        };
+        var clean = function(v) { return v == null ? NaN : parseFloat(String(v).replace(/[,%]/g, "")); };
+        list.forEach(function(q) {
+          var k = mapC[q.symbol];
+          if (!k || result.data[k]) return;
+          var ext = q.ExtendedMktQuote;
+          var useExt = ext && ext.last && (q.curmktstatus === "PRE_MKT" || q.curmktstatus === "POST_MKT");
+          var price = useExt ? clean(ext.last) : clean(q.last);
+          var chgPct = useExt ? clean(ext.change_pct) : clean(q.change_pct);
+          var high = clean(q.high);
+          var low = clean(q.low);
+          if (!isNaN(price)) {
+            result.data[k] = {
+              price: price,
+              chgPct: isNaN(chgPct) ? 0 : chgPct,
+              high: isNaN(high) ? price : Math.max(high, price),
+              low: isNaN(low) ? price : Math.min(low, price),
+              source: "GAS·CNBC"
+            };
+          }
+        });
+        if (!result.data["NQ"] && result.data["QQQ_FB"]) {
+          result.data["NQ"] = result.data["QQQ_FB"];
+          result.data["NQ"].usedFallback = "QQQ";
+        }
+        delete result.data["QQQ_FB"];
+      }
+    } catch (err) { result.errors.push("CNBC:" + err); }
+  }
+
+  // 3) Yahoo Finance fallback only for any still-missing indicator
+  var yahooMap = { DXY: "DX-Y.NYB", US10Y: "^TNX", US02Y: "2YY=F", VIX: "^VIX", NQ: "NQ=F", IWM: "IWM", MSTR: "MSTR", COIN: "COIN", IBIT: "IBIT" };
+  allKeys.forEach(function(k) {
+    if (result.data[k]) return;
+    try {
+      var yUrl = "https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(yahooMap[k]) + "?interval=15m&range=1d&includePrePost=true";
+      var yRes = UrlFetchApp.fetch(yUrl, { headers: { "User-Agent": "Mozilla/5.0" }, muteHttpExceptions: true });
+      if (yRes.getResponseCode() === 200) {
+        var yj = JSON.parse(yRes.getContentText());
+        var r = yj.chart && yj.chart.result && yj.chart.result[0];
+        if (r && r.meta && r.meta.regularMarketPrice) {
+          var p = r.meta.regularMarketPrice;
+          var prev = r.meta.chartPreviousClose || r.meta.previousClose || p;
+          result.data[k] = {
+            price: p,
+            chgPct: prev ? ((p - prev) / prev) * 100 : 0,
+            high: r.meta.regularMarketDayHigh || p,
+            low: r.meta.regularMarketDayLow || p,
+            source: "GAS·Yahoo"
+          };
+        }
+      }
+    } catch (err) { result.errors.push(k + ":" + err); }
+  });
+
+  return ContentService
+    .createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+/* =========================================================
+   Configuration & State (Zero Mock Data Policy)
+   ========================================================= */
+const DEFAULT_CFG = {
+  btcSupport: 57500,
+  btcReclaim: 59000,
+  ethSupport: 1600,
+  ethReclaim: 1700,
+  intervalSec: 60,
+  gasUrl: "",
+  twelveKey: "",
+  finnhubKey: ""
+};
+
+let cfg = loadCfg();
+let manualOverrides = loadManuals();
+let autoTimer = null;
+let tvMacroLoaded = false;
+let tvChartLoaded = false;
+let currentTvSymbol = "BINANCE:BTCUSDT.P";
+
+const MACRO_DEFS = [
+  // Inverse Pressure (30 pts)
+  { key: "DXY",   tv: "TVC:DXY",        cnbc: ".DXY",  yahoo: "DX-Y.NYB", td: "DXY",   fh: null,   isUsStock: false, name: "美元指數",         group: "macro", inverse: true,  weight: 10, decimals: 2, chgGood: -0.45, chgBad: 0.65 },
+  { key: "US10Y", tv: "TVC:US10Y",      cnbc: "US10Y", yahoo: "^TNX",     td: null,    fh: null,   isUsStock: false, name: "10年期美債殖利率", group: "macro", inverse: true,  weight: 7,  decimals: 3, suffix: "%", chgGood: -1.5, chgBad: 2.0 },
+  { key: "US02Y", tv: "TVC:US02Y",      cnbc: "US2Y",  yahoo: "2YY=F",    td: null,    fh: null,   isUsStock: false, name: "2年期美債殖利率",  group: "macro", inverse: true,  weight: 5,  decimals: 3, suffix: "%", chgGood: -1.5, chgBad: 2.0 },
+  { key: "VIX",   tv: "TVC:VIX",        cnbc: ".VIX",  yahoo: "^VIX",     td: "VIX",   fh: null,   isUsStock: false, name: "VIX 恐慌指數",     group: "macro", inverse: true,  weight: 8,  decimals: 2, chgGood: -4.0,  chgBad: 8.0 },
+  // Positive Equities (30 pts)
+  { key: "NQ",    tv: "CME_MINI:NQ1!",  cnbc: "@ND.1", yahoo: "NQ=F",     td: "QQQ",   fh: "QQQ",  isUsStock: false, fallbackTv: "NASDAQ:QQQ", fallbackCnbc: "QQQ", fallbackYahoo: "QQQ", name: "那斯達克100", group: "eq", inverse: false, weight: 12, decimals: 1, chgGood: 1.0, chgBad: -2.0 },
+  { key: "IWM",   tv: "AMEX:IWM",       cnbc: "IWM",   yahoo: "IWM",      td: "IWM",   fh: "IWM",  isUsStock: true,  name: "羅素2000小型股",   group: "eq",    inverse: false, weight: 6,  decimals: 2, chgGood: 1.2, chgBad: -2.0 },
+  { key: "MSTR",  tv: "NASDAQ:MSTR",    cnbc: "MSTR",  yahoo: "MSTR",     td: "MSTR",  fh: "MSTR", isUsStock: true,  name: "MicroStrategy",    group: "eq",    inverse: false, weight: 5,  decimals: 2, chgGood: 3.0, chgBad: -5.0 },
+  { key: "COIN",  tv: "NASDAQ:COIN",    cnbc: "COIN",  yahoo: "COIN",     td: "COIN",  fh: "COIN", isUsStock: true,  name: "Coinbase",         group: "eq",    inverse: false, weight: 4,  decimals: 2, chgGood: 2.5, chgBad: -4.5 },
+  { key: "IBIT",  tv: "NASDAQ:IBIT",    cnbc: "IBIT",  yahoo: "IBIT",     td: "IBIT",  fh: "IBIT", isUsStock: true,  name: "貝萊德 BTC ETF",   group: "eq",    inverse: false, weight: 3,  decimals: 2, chgGood: 1.5, chgBad: -3.0 }
+];
+
+const state = {
+  macro: {},
+  crypto: {
+    BTC: { symbol: "BTCUSDT", name: "比特幣永續", weight: 25, status: "loading" },
+    ETH: { symbol: "ETHUSDT", name: "以太坊永續", weight: 15, status: "loading" }
+  },
+  wsConnected: false,
+  channels: { gas: "idle", tv: "idle", cnbc: "idle", api: "idle", yahoo: "idle" }
+};
+
+function loadCfg() {
+  try { return { ...DEFAULT_CFG, ...JSON.parse(localStorage.getItem("stab_monitor_cfg_v2") || "{}") }; }
+  catch { return { ...DEFAULT_CFG }; }
+}
+function loadManuals() {
+  try { return JSON.parse(localStorage.getItem("stab_monitor_manual_v2") || "{}"); }
+  catch { return {}; }
+}
+function saveCfgStorage() {
+  try { localStorage.setItem("stab_monitor_cfg_v2", JSON.stringify(cfg)); } catch {}
+}
+function saveManualsStorage() {
+  try { localStorage.setItem("stab_monitor_manual_v2", JSON.stringify(manualOverrides)); } catch {}
+}
+
+/* =========================================================
+   US Market Session Detector (America/New_York)
+   ========================================================= */
+function getUsMarketSession() {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false
+    }).formatToParts(new Date());
+    const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+    if (map.weekday === "Sat" || map.weekday === "Sun") return { code: "CLOSED", label: "美股休市" };
+    const mins = parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10);
+    if (mins >= 240 && mins < 570) return { code: "PRE", label: "美股盤前" };
+    if (mins >= 570 && mins < 960) return { code: "REG", label: "美股盤中" };
+    if (mins >= 960 && mins < 1200) return { code: "POST", label: "美股盤後" };
+    return { code: "CLOSED", label: "美股休市" };
+  } catch {
+    return { code: "REG", label: "" };
+  }
+}
+
+/* =========================================================
+   Math & TA Utilities
+   ========================================================= */
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function linMap(val, x0, x1) { return x1 === x0 ? 0.5 : clamp((val - x0) / (x1 - x0), 0, 1); }
+
+function calcSMA(arr, period) {
+  if (!arr || arr.length < period) return null;
+  let sum = 0;
+  for (let i = arr.length - period; i < arr.length; i++) sum += arr[i];
+  return sum / period;
+}
+
+function calcRSI(closes, period = 14) {
+  if (!closes || closes.length <= period) return null;
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= period; i++) {
+    const d = closes[i] - closes[i - 1];
+    if (d >= 0) gains += d; else losses -= d;
+  }
+  let avgGain = gains / period, avgLoss = losses / period;
+  for (let i = period + 1; i < closes.length; i++) {
+    const d = closes[i] - closes[i - 1];
+    avgGain = (avgGain * (period - 1) + (d > 0 ? d : 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + (d < 0 ? -d : 0)) / period;
+  }
+  if (avgLoss === 0) return 100;
+  return 100 - (100 / (1 + avgGain / avgLoss));
+}
+
+function fmtNum(v, dec = 2) {
+  if (v === null || v === undefined || isNaN(v)) return "--";
+  return Number(v).toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+function fmtPct(v) {
+  if (v === null || v === undefined || isNaN(v)) return "--";
+  return `${v > 0 ? "+" : ""}${v.toFixed(2)}%`;
+}
+
+async function fetchWithTimeout(url, opts = {}, ms = 6500) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { ...opts, signal: ctrl.signal, cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+/* =========================================================
+   Binance Real-Time Data (Direct Public API + WebSocket)
+   ========================================================= */
+async function fetchBinanceCrypto(key, symbol) {
+  const base = "https://fapi.binance.com/fapi/v1";
+  try {
+    const [tRes, k4Res, k1Res, k15Res, pRes, oiRes] = await Promise.all([
+      fetchWithTimeout(`${base}/ticker/24hr?symbol=${symbol}`),
+      fetchWithTimeout(`${base}/klines?symbol=${symbol}&interval=4h&limit=65`),
+      fetchWithTimeout(`${base}/klines?symbol=${symbol}&interval=1h&limit=30`),
+      fetchWithTimeout(`${base}/klines?symbol=${symbol}&interval=15m&limit=36`),
+      fetchWithTimeout(`${base}/premiumIndex?symbol=${symbol}`),
+      fetchWithTimeout(`${base}/openInterest?symbol=${symbol}`)
+    ]);
+    const [ticker, k4, k1, k15, prem, oi] = await Promise.all([
+      tRes.json(), k4Res.json(), k1Res.json(), k15Res.json(), pRes.json(), oiRes.json()
+    ]);
+
+    const price = parseFloat(ticker.lastPrice);
+    const chgPct = parseFloat(ticker.priceChangePercent);
+    const high24 = parseFloat(ticker.highPrice);
+    const low24 = parseFloat(ticker.lowPrice);
+    const rangePos = high24 > low24 ? clamp((price - low24) / (high24 - low24), 0, 1) : 0.5;
+    const c4 = k4.map(x => parseFloat(x[4]));
+    const c1 = k1.map(x => parseFloat(x[4]));
+    const c15 = k15.map(x => parseFloat(x[4]));
+    const l15 = k15.map(x => parseFloat(x[3]));
+
+    state.crypto[key] = {
+      ...state.crypto[key],
+      price, chgPct, high24, low24, rangePos,
+      ma30_4h: calcSMA(c4, 30), ma45_4h: calcSMA(c4, 45), ma60_4h: calcSMA(c4, 60),
+      rsi1h: calcRSI(c1, 14), rsi1hPrev: calcRSI(c1.slice(0, -1), 14), rsi15m: calcRSI(c15, 14),
+      hasHigherLow: Math.min(...l15.slice(-8)) > Math.min(...l15.slice(-28, -8)),
+      fundingRate: parseFloat(prem.lastFundingRate) * 100,
+      openInterest: parseFloat(oi.openInterest),
+      oiUsd: parseFloat(oi.openInterest) * price,
+      status: "ok", source: "永續", updatedAt: Date.now()
+    };
+  } catch {
+    try {
+      const spotBase = "https://api.binance.com/api/v3";
+      const [tRes, k4Res, k1Res, k15Res] = await Promise.all([
+        fetchWithTimeout(`${spotBase}/ticker/24hr?symbol=${symbol}`),
+        fetchWithTimeout(`${spotBase}/klines?symbol=${symbol}&interval=4h&limit=65`),
+        fetchWithTimeout(`${spotBase}/klines?symbol=${symbol}&interval=1h&limit=30`),
+        fetchWithTimeout(`${spotBase}/klines?symbol=${symbol}&interval=15m&limit=36`)
+      ]);
+      const [ticker, k4, k1, k15] = await Promise.all([tRes.json(), k4Res.json(), k1Res.json(), k15Res.json()]);
+      const price = parseFloat(ticker.lastPrice);
+      const chgPct = parseFloat(ticker.priceChangePercent);
+      const high24 = parseFloat(ticker.highPrice);
+      const low24 = parseFloat(ticker.lowPrice);
+      const c4 = k4.map(x => parseFloat(x[4]));
+      const c1 = k1.map(x => parseFloat(x[4]));
+      const c15 = k15.map(x => parseFloat(x[4]));
+      const l15 = k15.map(x => parseFloat(x[3]));
+      state.crypto[key] = {
+        ...state.crypto[key],
+        price, chgPct, high24, low24,
+        rangePos: high24 > low24 ? clamp((price - low24) / (high24 - low24), 0, 1) : 0.5,
+        ma30_4h: calcSMA(c4, 30), ma45_4h: calcSMA(c4, 45), ma60_4h: calcSMA(c4, 60),
+        rsi1h: calcRSI(c1, 14), rsi1hPrev: calcRSI(c1.slice(0, -1), 14), rsi15m: calcRSI(c15, 14),
+        hasHigherLow: Math.min(...l15.slice(-8)) > Math.min(...l15.slice(-28, -8)),
+        fundingRate: null, openInterest: null, oiUsd: null,
+        status: "ok", source: "現貨", updatedAt: Date.now()
+      };
+    } catch {
+      state.crypto[key].status = "error";
+    }
+  }
+}
+
+let ws = null;
+function connectBinanceWS() {
+  try {
+    if (ws) { ws.onclose = null; ws.close(); }
+    ws = new WebSocket("wss://fstream.binance.com/stream?streams=btcusdt@miniTicker/ethusdt@miniTicker");
+    ws.onopen = () => { state.wsConnected = true; updateStatusDots(); };
+    ws.onmessage = (evt) => {
+      try {
+        const d = JSON.parse(evt.data)?.data;
+        if (!d || !d.s) return;
+        const key = d.s === "BTCUSDT" ? "BTC" : d.s === "ETHUSDT" ? "ETH" : null;
+        if (!key || state.crypto[key].status !== "ok") return;
+        const c = state.crypto[key];
+        const p = parseFloat(d.c), o = parseFloat(d.o), h = parseFloat(d.h), l = parseFloat(d.l);
+        c.price = p; c.high24 = h; c.low24 = l;
+        if (o > 0) c.chgPct = ((p - o) / o) * 100;
+        c.rangePos = h > l ? clamp((p - l) / (h - l), 0, 1) : 0.5;
+        renderAll();
+      } catch {}
+    };
+    ws.onclose = () => { state.wsConnected = false; updateStatusDots(); setTimeout(connectBinanceWS, 5000); };
+    ws.onerror = () => { state.wsConnected = false; updateStatusDots(); };
+  } catch {}
+}
+
+/* =========================================================
+   4-LAYER FREE MACRO DATA PIPELINE (Zero Mock Data)
+   Layer 1: Personal Google Apps Script (if configured)
+   Layer 2: TradingView Global Scanner Direct POST (No Proxy, No Key)
+   Layer 3: CNBC Single-Batch Quote (Direct -> Smart Proxy)
+   Layer 4: Optional Free Twelve Data / Finnhub Direct CORS + Yahoo Gap Fill
+   ========================================================= */
+function normalizeMacroEntry(def, raw, sourceLabel) {
+  const session = getUsMarketSession().code;
+  let price = raw.price;
+  let chgPct = raw.chgPct;
+  let extTag = "";
+
+  // Use premarket/postmarket quotes for US equities during extended sessions if available
+  if (def.isUsStock) {
+    if (session === "PRE" && raw.prePrice && raw.preChg !== null && raw.preChg !== undefined) {
+      price = raw.prePrice;
+      chgPct = raw.preChg;
+      extTag = "盤前";
+    } else if (session === "POST" && raw.postPrice && raw.postChg !== null && raw.postChg !== undefined) {
+      price = raw.postPrice;
+      chgPct = raw.postChg;
+      extTag = "盤後";
+    }
+  }
+
+  let high = raw.high != null && !isNaN(raw.high) ? Math.max(raw.high, price) : price;
+  let low = raw.low != null && !isNaN(raw.low) ? Math.min(raw.low, price) : price;
+  let rangePos;
+  if (high > low) {
+    rangePos = clamp((price - low) / (high - low), 0, 1);
+  } else {
+    // When high == low (e.g. extended-hours tick without intraday bar), infer position from % change gently
+    rangePos = clamp(0.5 + chgPct / 6, 0.08, 0.92);
+  }
+
+  return {
+    price, chgPct, high, low, rangePos,
+    slope3: raw.slope3 || 0,
+    status: "ok",
+    source: extTag ? `${sourceLabel}·${extTag}` : sourceLabel,
+    usedFallback: raw.usedFallback || null,
+    updatedAt: Date.now()
+  };
+}
+
+// Layer 1: Google Apps Script Personal Cloud Relay (100% Free, Zero CORS)
+async function fetchViaGAS() {
+  if (!cfg.gasUrl || !cfg.gasUrl.startsWith("http")) {
+    state.channels.gas = "off";
+    return 0;
+  }
+  try {
+    const sep = cfg.gasUrl.includes("?") ? "&" : "?";
+    const res = await fetchWithTimeout(`${cfg.gasUrl}${sep}_t=${Date.now()}`, {}, 9000);
+    const json = await res.json();
+    const dMap = json?.data || {};
+    let hits = 0;
+    for (const def of MACRO_DEFS) {
+      if (state.macro[def.key]?.status === "manual") continue;
+      if (dMap[def.key] && !isNaN(dMap[def.key].price)) {
+        state.macro[def.key] = normalizeMacroEntry(def, dMap[def.key], dMap[def.key].source || "GAS雲端");
+        hits++;
+      }
+    }
+    state.channels.gas = hits > 0 ? `ok:${hits}` : "fail";
+    return hits;
+  } catch {
+    state.channels.gas = "fail";
+    return 0;
+  }
+}
+
+// Layer 2: TradingView Global Scanner Direct Browser POST (Simple CORS request, no preflight!)
+async function fetchViaTradingViewDirect(missingDefs) {
+  if (!missingDefs.length) return 0;
+  try {
+    const tickerSet = new Set();
+    const tickerToKeys = {};
+    for (const def of missingDefs) {
+      tickerSet.add(def.tv);
+      tickerToKeys[def.tv] = def.key;
+      if (def.fallbackTv) {
+        tickerSet.add(def.fallbackTv);
+        tickerToKeys[def.fallbackTv] = def.key + "_FB";
+      }
+    }
+    const payload = JSON.stringify({
+      symbols: { tickers: Array.from(tickerSet), query: { types: [] } },
+      columns: ["close", "change", "high", "low", "open", "premarket_close", "premarket_change", "postmarket_close", "postmarket_change"]
+    });
+    // IMPORTANT: Do NOT set Content-Type: application/json header -> defaults to text/plain,
+    // making this a CORS Simple Request with NO OPTIONS preflight!
+    const res = await fetchWithTimeout("https://scanner.tradingview.com/global/scan", {
+      method: "POST",
+      body: payload
+    }, 6500);
+    const json = await res.json();
+    const rows = json?.data || [];
+    const parsed = {};
+    for (const row of rows) {
+      const k = tickerToKeys[row.s];
+      const d = row.d || [];
+      if (k && d[0] !== null && d[0] !== undefined) {
+        parsed[k] = {
+          price: Number(d[0]),
+          chgPct: Number(d[1] || 0),
+          high: d[2] != null ? Number(d[2]) : Number(d[0]),
+          low: d[3] != null ? Number(d[3]) : Number(d[0]),
+          prePrice: d[5] != null ? Number(d[5]) : null,
+          preChg: d[6] != null ? Number(d[6]) : null,
+          postPrice: d[7] != null ? Number(d[7]) : null,
+          postChg: d[8] != null ? Number(d[8]) : null
+        };
+      }
+    }
+    let hits = 0;
+    for (const def of missingDefs) {
+      let raw = parsed[def.key];
+      let fb = null;
+      if (!raw && parsed[def.key + "_FB"]) {
+        raw = parsed[def.key + "_FB"];
+        fb = "QQQ";
+      }
+      if (raw) {
+        raw.usedFallback = fb;
+        state.macro[def.key] = normalizeMacroEntry(def, raw, "TV直連");
+        hits++;
+      }
+    }
+    state.channels.tv = hits > 0 ? `ok:${hits}` : "fail";
+    return hits;
+  } catch {
+    state.channels.tv = "fail";
+    return 0;
+  }
+}
+
+// Helper: Fetch JSON via direct OR reliable public proxy wrappers (including allorigins /get wrapper)
+async function fetchJsonResilient(targetUrl, timeoutMs = 6000) {
+  const attempts = [
+    async () => {
+      const r = await fetchWithTimeout(targetUrl, {}, 4000);
+      return await r.json();
+    },
+    async () => {
+      const r = await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`, {}, timeoutMs);
+      const wrap = await r.json();
+      if (!wrap?.contents) throw new Error("empty");
+      return JSON.parse(wrap.contents);
+    },
+    async () => {
+      const r = await fetchWithTimeout(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`, {}, timeoutMs);
+      return await r.json();
+    },
+    async () => {
+      const r = await fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, {}, timeoutMs);
+      return await r.json();
+    }
+  ];
+  for (const fn of attempts) {
+    try { return await fn(); } catch {}
+  }
+  return null;
+}
+
+// Layer 3: CNBC Single Batch Quote (1 request gets ALL 9 indicators!)
+async function fetchViaCnbcBatch(missingDefs) {
+  if (!missingDefs.length) return 0;
+  try {
+    const syms = [];
+    for (const def of missingDefs) {
+      syms.push(def.cnbc);
+      if (def.fallbackCnbc) syms.push(def.fallbackCnbc);
+    }
+    const url = `https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=${encodeURIComponent(syms.join("|"))}&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json`;
+    const json = await fetchJsonResilient(url, 6500);
+    let list = json?.FormattedQuoteResult?.FormattedQuote;
+    if (!list) { state.channels.cnbc = "fail"; return 0; }
+    if (!Array.isArray(list)) list = [list];
+
+    const bySym = {};
+    const clean = (v) => v == null ? NaN : parseFloat(String(v).replace(/[,%]/g, ""));
+    for (const q of list) {
+      const ext = q.ExtendedMktQuote;
+      const useExt = ext && ext.last && (q.curmktstatus === "PRE_MKT" || q.curmktstatus === "POST_MKT");
+      const price = useExt ? clean(ext.last) : clean(q.last);
+      const chgPct = useExt ? clean(ext.change_pct) : clean(q.change_pct);
+      const high = clean(q.high);
+      const low = clean(q.low);
+      if (!isNaN(price)) {
+        bySym[q.symbol] = {
+          price,
+          chgPct: isNaN(chgPct) ? 0 : chgPct,
+          high: isNaN(high) ? price : Math.max(high, price),
+          low: isNaN(low) ? price : Math.min(low, price)
+        };
+      }
+    }
+
+    let hits = 0;
+    for (const def of missingDefs) {
+      let raw = bySym[def.cnbc];
+      let fb = null;
+      if (!raw && def.fallbackCnbc && bySym[def.fallbackCnbc]) {
+        raw = bySym[def.fallbackCnbc];
+        fb = def.fallbackCnbc;
+      }
+      if (raw) {
+        raw.usedFallback = fb;
+        state.macro[def.key] = normalizeMacroEntry(def, raw, "CNBC");
+        hits++;
+      }
+    }
+    state.channels.cnbc = hits > 0 ? `ok:${hits}` : "fail";
+    return hits;
+  } catch {
+    state.channels.cnbc = "fail";
+    return 0;
+  }
+}
+
+// Layer 4A: Optional Free Twelve Data & Finnhub Direct CORS APIs
+async function fetchViaFreeApiKeys(missingDefs) {
+  if (!missingDefs.length) return 0;
+  let hits = 0;
+
+  // Twelve Data (batch comma-separated, 1 call!)
+  if (cfg.twelveKey && cfg.twelveKey.trim()) {
+    const tdDefs = missingDefs.filter(d => d.td);
+    if (tdDefs.length) {
+      try {
+        const syms = tdDefs.map(d => d.td).join(",");
+        const res = await fetchWithTimeout(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(syms)}&apikey=${encodeURIComponent(cfg.twelveKey.trim())}`, {}, 7000);
+        const json = await res.json();
+        for (const def of tdDefs) {
+          const item = tdDefs.length === 1 ? json : json[def.td];
+          if (item && item.close && !item.code) {
+            state.macro[def.key] = normalizeMacroEntry(def, {
+              price: parseFloat(item.close),
+              chgPct: parseFloat(item.percent_change || 0),
+              high: parseFloat(item.high || item.close),
+              low: parseFloat(item.low || item.close),
+              usedFallback: def.key === "NQ" ? "QQQ" : null
+            }, "TwelveData");
+            hits++;
+          }
+        }
+      } catch {}
+    }
+  }
+
+  // Finnhub (direct GET with ?token=, free 60/min for US stocks/ETFs)
+  if (cfg.finnhubKey && cfg.finnhubKey.trim()) {
+    const fhDefs = MACRO_DEFS.filter(d => d.fh && state.macro[d.key]?.status !== "ok" && state.macro[d.key]?.status !== "manual");
+    await Promise.allSettled(fhDefs.map(async (def) => {
+      try {
+        const res = await fetchWithTimeout(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(def.fh)}&token=${encodeURIComponent(cfg.finnhubKey.trim())}`, {}, 6000);
+        const q = await res.json();
+        if (q && q.c && q.c > 0) {
+          state.macro[def.key] = normalizeMacroEntry(def, {
+            price: q.c,
+            chgPct: q.dp || 0,
+            high: q.h || q.c,
+            low: q.l || q.c,
+            usedFallback: def.key === "NQ" ? "QQQ" : null
+          }, "Finnhub");
+          hits++;
+        }
+      } catch {}
+    }));
+  }
+
+  if (cfg.twelveKey || cfg.finnhubKey) {
+    state.channels.api = hits > 0 ? `ok:${hits}` : "idle";
+  } else {
+    state.channels.api = "off";
+  }
+  return hits;
+}
+
+// Layer 4B: Yahoo Finance Gap-Fill (only for symbols still missing)
+async function fetchViaYahooGapFill(missingDefs) {
+  if (!missingDefs.length) { state.channels.yahoo = "skip"; return 0; }
+  let hits = 0;
+  await Promise.allSettled(missingDefs.map(async (def) => {
+    const trySym = async (sym) => {
+      const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=15m&range=1d&includePrePost=true`;
+      const json = await fetchJsonResilient(target, 6000);
+      const result = json?.chart?.result?.[0];
+      if (!result?.meta) return null;
+      const meta = result.meta;
+      const quote = result.indicators?.quote?.[0] || {};
+      const closes = (quote.close || []).filter(x => x != null && !isNaN(x));
+      const highs = (quote.high || []).filter(x => x != null && !isNaN(x));
+      const lows = (quote.low || []).filter(x => x != null && !isNaN(x));
+      const price = meta.regularMarketPrice ?? closes[closes.length - 1];
+      const prevClose = meta.chartPreviousClose ?? meta.previousClose ?? closes[0];
+      if (!price || !prevClose) return null;
+      return {
+        price,
+        chgPct: ((price - prevClose) / prevClose) * 100,
+        high: Math.max(meta.regularMarketDayHigh || -Infinity, ...(highs.length ? highs : [price])),
+        low: Math.min(meta.regularMarketDayLow || Infinity, ...(lows.length ? lows : [price])),
+        slope3: closes.length >= 4 ? ((closes[closes.length - 1] - closes[closes.length - 4]) / closes[closes.length - 4]) * 100 : 0
+      };
+    };
+    let raw = await trySym(def.yahoo);
+    let fb = null;
+    if (!raw && def.fallbackYahoo) { raw = await trySym(def.fallbackYahoo); fb = def.fallbackYahoo; }
+    if (raw) {
+      raw.usedFallback = fb;
+      state.macro[def.key] = normalizeMacroEntry(def, raw, "Yahoo");
+      hits++;
+    }
+  }));
+  state.channels.yahoo = hits > 0 ? `ok:${hits}` : "fail";
+  return hits;
+}
+
+async function fetchAllMacro() {
+  state.channels = { gas: "idle", tv: "idle", cnbc: "idle", api: "idle", yahoo: "idle" };
+
+  // Reset non-manual slots before fresh pipeline run (keep old valid value only while loading, mark error at end if failed)
+  const freshMap = {};
+  for (const def of MACRO_DEFS) {
+    if (manualOverrides[def.key]) {
+      const m = manualOverrides[def.key];
+      state.macro[def.key] = {
+        price: m.price, chgPct: m.chgPct, high: null, low: null,
+        rangePos: m.rangePos, slope3: 0, status: "manual", source: "手動", updatedAt: m.updatedAt
+      };
+    } else {
+      state.macro[def.key] = { status: "loading" };
+    }
+  }
+
+  const getMissing = () => MACRO_DEFS.filter(d => state.macro[d.key]?.status !== "ok" && state.macro[d.key]?.status !== "manual");
+
+  // 1. Personal GAS (if configured)
+  await fetchViaGAS();
+
+  // 2. TradingView Direct Scanner (zero setup, 1 request)
+  let missing = getMissing();
+  if (missing.length) await fetchViaTradingViewDirect(missing);
+
+  // 3. CNBC Single Batch Quote (1 request for all remaining)
+  missing = getMissing();
+  if (missing.length) await fetchViaCnbcBatch(missing);
+
+  // 4. Optional Free API Keys (TwelveData / Finnhub)
+  missing = getMissing();
+  if (missing.length) await fetchViaFreeApiKeys(missing);
+
+  // 5. Yahoo Finance Gap Fill (only for remaining holes)
+  missing = getMissing();
+  if (missing.length) await fetchViaYahooGapFill(missing);
+
+  // Mark still-missing items explicitly as error (NEVER fake data)
+  for (const def of getMissing()) {
+    state.macro[def.key] = { status: "error" };
+  }
+}
+
+/* =========================================================
+   Stabilization Scoring Engine (0 - 100)
+   ========================================================= */
+function scoreMacroItem(def, d) {
+  if (!d || (d.status !== "ok" && d.status !== "manual")) return null;
+  let chgScore, posScore, momentumAdj = 0;
+
+  if (def.inverse) {
+    chgScore = 1 - linMap(d.chgPct, def.chgGood, def.chgBad);
+    posScore = 1 - d.rangePos;
+    if (d.slope3 < -0.05) momentumAdj = 0.06;
+    else if (d.slope3 > 0.08) momentumAdj = -0.06;
+  } else {
+    chgScore = linMap(d.chgPct, def.chgBad, def.chgGood);
+    posScore = d.rangePos;
+    if (d.slope3 > 0.1) momentumAdj = 0.06;
+    else if (d.slope3 < -0.1) momentumAdj = -0.06;
+  }
+
+  const ratio = clamp(chgScore * 0.40 + posScore * 0.60 + momentumAdj, 0, 1);
+  return {
+    ratio,
+    pts: ratio * def.weight,
+    max: def.weight,
+    signal: def.inverse
+      ? (ratio >= 0.68 ? "壓力回落" : ratio >= 0.42 ? "高檔震盪" : "持續施壓")
+      : (ratio >= 0.68 ? "止跌收腳" : ratio >= 0.42 ? "區間整理" : "偏弱探低")
+  };
+}
+
+function scoreBTC(c) {
+  if (!c || c.status !== "ok") return null;
+  const sup = Number(cfg.btcSupport) || 57500;
+  const rec = Number(cfg.btcReclaim) || 59000;
+  let supRatio;
+  if (c.price >= rec) supRatio = 1.0;
+  else if (c.price >= sup) supRatio = 0.45 + 0.55 * linMap(c.price, sup, rec);
+  else supRatio = 0.45 * linMap(c.price, sup * 0.96, sup);
+
+  const maRatio = c.ma30_4h ? linMap(((c.price - c.ma30_4h) / c.ma30_4h) * 100, -3.5, 0.5) : 0.5;
+  const hlScore = c.hasHigherLow ? 1.0 : 0.2;
+  const rsiScore = c.rsi1h !== null
+    ? clamp(linMap(c.rsi1h, 25, 52) * 0.7 + ((c.rsi1h > (c.rsi1hPrev ?? c.rsi1h)) ? 0.3 : 0), 0, 1)
+    : 0.5;
+  const structRatio = clamp(hlScore * 0.35 + rsiScore * 0.30 + c.rangePos * 0.35, 0, 1);
+
+  let fundRatio = 0.6;
+  if (c.fundingRate !== null && !isNaN(c.fundingRate)) {
+    fundRatio = c.fundingRate <= 0.01 ? 0.95 : c.fundingRate <= 0.025 ? 0.65 : 0.25;
+  }
+
+  const pts = supRatio * 7 + maRatio * 6 + structRatio * 7 + fundRatio * 5;
+  return {
+    pts, max: 25, ratio: pts / 25,
+    signal: pts >= 17.5 ? "結構轉強" : pts >= 12 ? "築底測試" : "偏空承壓"
+  };
+}
+
+function scoreETH(c, btc) {
+  if (!c || c.status !== "ok") return null;
+  const sup = Number(cfg.ethSupport) || 1600;
+  const rec = Number(cfg.ethReclaim) || 1700;
+  let supRatio;
+  if (c.price >= rec) supRatio = 1.0;
+  else if (c.price >= sup) supRatio = 0.45 + 0.55 * linMap(c.price, sup, rec);
+  else supRatio = 0.45 * linMap(c.price, sup * 0.94, sup);
+
+  const hlScore = c.hasHigherLow ? 1.0 : 0.2;
+  const rsiScore = c.rsi1h !== null
+    ? clamp(linMap(c.rsi1h, 22, 50) * 0.7 + ((c.rsi1h > (c.rsi1hPrev ?? c.rsi1h)) ? 0.3 : 0), 0, 1)
+    : 0.5;
+  const pMom = clamp(hlScore * 0.35 + rsiScore * 0.30 + c.rangePos * 0.35, 0, 1) * 5;
+  const pRel = (btc && btc.status === "ok" ? linMap(c.chgPct - btc.chgPct, -2.0, 1.0) : 0.5) * 3;
+  const pMa = (c.ma30_4h ? linMap(((c.price - c.ma30_4h) / c.ma30_4h) * 100, -5.0, 0.5) : 0.5) * 2;
+
+  const pts = supRatio * 5 + pMom + pRel + pMa;
+  return {
+    pts, max: 15, ratio: pts / 15,
+    signal: pts >= 10.5 ? "超跌轉強" : pts >= 7 ? "低檔震盪" : "弱勢陰跌"
+  };
+}
+
+function computeAggregate() {
+  let macroPts = 0, macroActiveW = 0, macroCount = 0;
+  let eqPts = 0, eqActiveW = 0, eqCount = 0;
+  let cryptoPts = 0, cryptoActiveW = 0, cryptoCount = 0;
+
+  const macroScores = {};
+  for (const def of MACRO_DEFS) {
+    const s = scoreMacroItem(def, state.macro[def.key]);
+    macroScores[def.key] = s;
+    if (s) {
+      if (def.group === "macro") { macroPts += s.pts; macroActiveW += def.weight; macroCount++; }
+      else { eqPts += s.pts; eqActiveW += def.weight; eqCount++; }
+    }
+  }
+  const btcScore = scoreBTC(state.crypto.BTC);
+  const ethScore = scoreETH(state.crypto.ETH, state.crypto.BTC);
+  if (btcScore) { cryptoPts += btcScore.pts; cryptoActiveW += 25; cryptoCount++; }
+  if (ethScore) { cryptoPts += ethScore.pts; cryptoActiveW += 15; cryptoCount++; }
+
+  const normMacro = macroActiveW > 0 ? (macroPts / macroActiveW) * 30 : null;
+  const normEq = eqActiveW > 0 ? (eqPts / eqActiveW) * 30 : null;
+  const normCrypto = cryptoActiveW > 0 ? (cryptoPts / cryptoActiveW) * 40 : null;
+  const totalActiveW = macroActiveW + eqActiveW + cryptoActiveW;
+  const finalScore = totalActiveW > 0 ? Math.round(((macroPts + eqPts + cryptoPts) / totalActiveW) * 100) : null;
+
+  return {
+    finalScore,
+    totalCount: macroCount + eqCount + cryptoCount,
+    maxCount: MACRO_DEFS.length + 2,
+    macro: { norm: normMacro, count: macroCount },
+    eq: { norm: normEq, count: eqCount },
+    crypto: { norm: normCrypto, count: cryptoCount },
+    macroScores, btcScore, ethScore
+  };
+}
+
+/* =========================================================
+   UI Rendering
+   ========================================================= */
+function colorForRatio(r) {
+  if (r === null || r === undefined) return "#64748b";
+  if (r >= 0.72) return "var(--green)";
+  if (r >= 0.55) return "var(--yellow)";
+  if (r >= 0.40) return "var(--orange)";
+  return "var(--red)";
+}
+function pillClassForRatio(r) {
+  if (r === null || r === undefined) return "";
+  if (r >= 0.72) return "green";
+  if (r >= 0.55) return "yellow";
+  if (r >= 0.40) return "orange";
+  return "red";
+}
+
+function renderChannelDiagnostics() {
+  const ch = state.channels;
+  const tags = [];
+  if (ch.gas !== "off" && ch.gas !== "idle") {
+    const ok = ch.gas.startsWith("ok");
+    tags.push(`<span class="ch-tag ${ok ? "ok" : "fail"}">GAS雲端 ${ok ? "✓" + ch.gas.split(":")[1] : "✕"}</span>`);
+  }
+  if (ch.tv !== "idle") {
+    const ok = ch.tv.startsWith("ok");
+    tags.push(`<span class="ch-tag ${ok ? "ok" : "fail"}">TV直連 ${ok ? "✓" + ch.tv.split(":")[1] : "被擋"}</span>`);
+  }
+  if (ch.cnbc !== "idle") {
+    const ok = ch.cnbc.startsWith("ok");
+    tags.push(`<span class="ch-tag ${ok ? "ok" : "fail"}">CNBC批次 ${ok ? "✓" + ch.cnbc.split(":")[1] : "無"}</span>`);
+  }
+  if (ch.api && ch.api.startsWith("ok")) {
+    tags.push(`<span class="ch-tag ok">免費Key ✓${ch.api.split(":")[1]}</span>`);
+  }
+  if (ch.yahoo && ch.yahoo.startsWith("ok")) {
+    tags.push(`<span class="ch-tag ok">Yahoo補缺 ✓${ch.yahoo.split(":")[1]}</span>`);
+  }
+  document.getElementById("channelDiagTags").innerHTML = tags.length ? tags.join("") : `<span class="ch-tag">正在探測免費通道...</span>`;
+}
+
+function renderAll() {
+  const agg = computeAggregate();
+  document.getElementById("sessionBadge").textContent = getUsMarketSession().label;
+
+  const compPill = document.getElementById("completenessPill");
+  compPill.textContent = `有效指標 ${agg.totalCount}/${agg.maxCount}`;
+  compPill.className = "pill " + (agg.totalCount === agg.maxCount ? "green" : agg.totalCount >= 8 ? "yellow" : "orange");
+
+  const macroOkCount = agg.macro.count + agg.eq.count;
+  const stillLoading = MACRO_DEFS.some(d => state.macro[d.key]?.status === "loading");
+  document.getElementById("proxyBanner").style.display = (!stillLoading && macroOkCount < MACRO_DEFS.length) ? "flex" : "none";
+
+  // Hero Gauge
+  const arc = document.getElementById("gaugeArc");
+  const scoreEl = document.getElementById("totalScore");
+  const C = 351.86;
+  if (agg.finalScore !== null) {
+    scoreEl.textContent = agg.finalScore;
+    const ratio = agg.finalScore / 100;
+    const col = colorForRatio(ratio);
+    arc.style.strokeDashoffset = C * (1 - ratio);
+    arc.style.stroke = col;
+    scoreEl.style.color = col;
+
+    const vTitle = document.getElementById("verdictTitle");
+    const vDesc = document.getElementById("verdictDesc");
+    if (agg.finalScore >= 80) {
+      vTitle.innerHTML = `<span style="color:var(--green)">🟢 強勢回穩・右側做多</span>`;
+      vDesc.textContent = "總經壓力鬆綁、美股轉強且幣圈結構守穩，可依紀律執行右側多單。";
+    } else if (agg.finalScore >= 65) {
+      vTitle.innerHTML = `<span style="color:var(--yellow)">🟡 初步止跌・分批試多</span>`;
+      vDesc.textContent = "恐慌賣壓出現降溫與收腳訊號，適合輕倉試探或等關鍵位確認。";
+    } else if (agg.finalScore >= 45) {
+      vTitle.innerHTML = `<span style="color:var(--orange)">🟠 多空拉鋸・觀望等待</span>`;
+      vDesc.textContent = "美股、債息與幣圈尚未形成一致共振，易出現插針洗盤，建議保持耐心。";
+    } else {
+      vTitle.innerHTML = `<span style="color:var(--red)">🔴 賣壓主導・嚴禁接刀</span>`;
+      vDesc.textContent = "反向壓力源仍強或大盤處於破位探底，避免逆勢搶反彈，退守關鍵前低。";
+    }
+  } else {
+    scoreEl.textContent = "--";
+    arc.style.strokeDashoffset = C;
+  }
+
+  setPillar("pMacro", agg.macro.norm, 30);
+  setPillar("pEq", agg.eq.norm, 30);
+  setPillar("pCrypto", agg.crypto.norm, 40);
+
+  setStep(1, agg.macro.norm !== null ? agg.macro.norm / 30 : null, ["已見頂回落", "高檔鈍化", "持續衝高"]);
+  setStep(2, agg.eq.norm !== null ? agg.eq.norm / 30 : null, ["收腳轉強", "震盪築底", "破低承壓"]);
+  setStep(3, agg.crypto.norm !== null ? agg.crypto.norm / 40 : null, ["守穩翻多", "支撐測試", "空頭主導"]);
+
+  renderChannelDiagnostics();
+
+  const btc = state.crypto.BTC, eth = state.crypto.ETH;
+  if (btc.status === "ok" && eth.status === "ok") {
+    const spread = eth.chgPct - btc.chgPct;
+    const ebPill = document.getElementById("ethBtcPill");
+    ebPill.textContent = `ETH/BTC ${(eth.price / btc.price).toFixed(5)} (${spread >= 0 ? "+" : ""}${spread.toFixed(2)}%)`;
+    ebPill.className = "pill num " + (spread >= 0 ? "green" : "red");
+  }
+
+  document.getElementById("overviewCryptoGrid").innerHTML = [
+    renderCryptoOverviewCard("BTC", btc, agg.btcScore, 1),
+    renderCryptoOverviewCard("ETH", eth, agg.ethScore, 2)
+  ].join("");
+
+  document.getElementById("overviewMacroGrid").innerHTML = MACRO_DEFS
+    .filter(d => d.group === "macro")
+    .map(def => renderMacroCard(def, state.macro[def.key], agg.macroScores[def.key]))
+    .join("");
+
+  document.getElementById("overviewEqGrid").innerHTML = MACRO_DEFS
+    .filter(d => d.group === "eq")
+    .map(def => renderMacroCard(def, state.macro[def.key], agg.macroScores[def.key]))
+    .join("");
+
+  renderCryptoDetail("btc", btc, agg.btcScore, cfg.btcSupport, cfg.btcReclaim, 1);
+  renderCryptoDetail("eth", eth, agg.ethScore, cfg.ethSupport, cfg.ethReclaim, 2);
+  updateStatusDots();
+}
+
+function setPillar(prefix, val, max) {
+  const txt = document.getElementById(prefix + "Score");
+  const bar = document.getElementById(prefix + "Bar");
+  if (val === null) {
+    txt.textContent = `-- / ${max}`;
+    bar.style.width = "0%";
+    bar.style.background = "#475569";
+  } else {
+    const r = val / max;
+    txt.textContent = `${val.toFixed(1)} / ${max}`;
+    bar.style.width = `${clamp(r * 100, 3, 100)}%`;
+    bar.style.background = colorForRatio(r);
+  }
+}
+
+function setStep(num, ratio, labels) {
+  const box = document.getElementById(`step${num}Box`);
+  const st = document.getElementById(`step${num}State`);
+  box.className = "step-box";
+  if (ratio === null) { st.textContent = "無數據"; st.style.color = "var(--text-mute)"; return; }
+  if (ratio >= 0.66) { box.classList.add("ok"); st.textContent = "✓ " + labels[0]; st.style.color = "var(--green)"; }
+  else if (ratio >= 0.45) { box.classList.add("mid"); st.textContent = "◐ " + labels[1]; st.style.color = "var(--yellow)"; }
+  else { box.classList.add("bad"); st.textContent = "✕ " + labels[2]; st.style.color = "var(--red)"; }
+}
+
+function renderCryptoOverviewCard(key, c, sc, dec) {
+  if (!c || c.status !== "ok") {
+    return `<div class="ind-card">
+      <div class="ind-top"><div><div class="ind-sym">${key}</div><div class="ind-name">幣安永續</div></div><span class="ind-pts">--</span></div>
+      <div class="ind-price num" style="color:var(--text-mute)">${c?.status === "error" ? "連線失敗" : "載入中..."}</div>
+    </div>`;
+  }
+  const chgCls = c.chgPct > 0 ? "up" : c.chgPct < 0 ? "down" : "flat";
+  const pctPos = Math.round(c.rangePos * 100);
+  const pCls = sc ? pillClassForRatio(sc.ratio) : "";
+  return `
+    <div class="ind-card">
+      <div class="ind-top">
+        <div>
+          <div class="ind-sym">${key} <span class="src-badge gas">幣安${c.source || ""}</span></div>
+          <div class="ind-name">USDT 永續合約</div>
+        </div>
+        <span class="ind-pts pill ${pCls} num">${sc ? sc.pts.toFixed(1) : "--"}/${c.weight}</span>
+      </div>
+      <div class="ind-mid">
+        <div class="ind-price num">$${fmtNum(c.price, dec)}</div>
+        <div class="ind-chg num ${chgCls}">${fmtPct(c.chgPct)}</div>
+      </div>
+      <div class="range-wrap">
+        <div class="range-labels num">
+          <span>低 ${fmtNum(c.low24, dec)}</span>
+          <span>24h位 ${pctPos}%</span>
+          <span>高 ${fmtNum(c.high24, dec)}</span>
+        </div>
+        <div class="range-track">
+          <div class="range-fill" style="width:${pctPos}%;background:${colorForRatio(c.rangePos)}"></div>
+          <div class="range-thumb" style="left:${pctPos}%;border-color:${colorForRatio(c.rangePos)}"></div>
+        </div>
+      </div>
+      <div class="ind-foot">
+        <span>1H RSI <strong class="num">${c.rsi1h ? c.rsi1h.toFixed(1) : "--"}</strong></span>
+        <span style="color:${colorForRatio(sc?.ratio)};font-weight:700">${sc?.signal || "--"}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderMacroCard(def, d, sc) {
+  const isOk = d && (d.status === "ok" || d.status === "manual");
+  const suffix = def.suffix || "";
+  if (!isOk) {
+    return `
+      <div class="ind-card">
+        <div class="ind-top">
+          <div><div class="ind-sym">${def.key}</div><div class="ind-name">${def.name}</div></div>
+          <span class="ind-pts num">--/${def.weight}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-mute);padding:6px 0;">
+          ${d?.status === "error" ? "跨網域受限（請設免費通道）" : "抓取免費報價中..."}
+        </div>
+        <div class="ind-foot">
+          <span>權重 ${def.weight}分</span>
+          <button class="mini-edit-btn" onclick="openManual('${def.key}')">手動輸入</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const chgColor = def.inverse
+    ? (d.chgPct < 0 ? "up" : d.chgPct > 0 ? "down" : "flat")
+    : (d.chgPct > 0 ? "up" : d.chgPct < 0 ? "down" : "flat");
+  const pctPos = Math.round(d.rangePos * 100);
+  const barColor = colorForRatio(def.inverse ? (1 - d.rangePos) : d.rangePos);
+  const pCls = sc ? pillClassForRatio(sc.ratio) : "";
+  const badgeCls = d.status === "manual" ? "manual" : (d.source?.startsWith("GAS") ? "gas" : "");
+  const labelSym = d.usedFallback ? `${def.key}(${d.usedFallback})` : def.key;
+
+  return `
+    <div class="ind-card">
+      <div class="ind-top">
+        <div>
+          <div class="ind-sym">${labelSym} <span class="src-badge ${badgeCls}">${d.source || "Live"}</span></div>
+          <div class="ind-name">${def.name}</div>
+        </div>
+        <span class="ind-pts pill ${pCls} num">${sc.pts.toFixed(1)}/${def.weight}</span>
+      </div>
+      <div class="ind-mid">
+        <div class="ind-price num">${fmtNum(d.price, def.decimals)}${suffix}</div>
+        <div class="ind-chg num ${chgColor}">${fmtPct(d.chgPct)}</div>
+      </div>
+      <div class="range-wrap">
+        <div class="range-labels num">
+          <span>${d.low ? fmtNum(d.low, def.decimals) : "低"}</span>
+          <span>盤中位 ${pctPos}%</span>
+          <span>${d.high ? fmtNum(d.high, def.decimals) : "高"}</span>
+        </div>
+        <div class="range-track">
+          <div class="range-fill" style="width:${pctPos}%;background:${barColor}"></div>
+          <div class="range-thumb" style="left:${pctPos}%;border-color:${barColor}"></div>
+        </div>
+      </div>
+      <div class="ind-foot">
+        <span style="color:${colorForRatio(sc.ratio)};font-weight:700">${sc.signal}</span>
+        <button class="mini-edit-btn" onclick="openManual('${def.key}')">校準</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderCryptoDetail(prefix, c, sc, sup, rec, dec) {
+  const ptsEl = document.getElementById(prefix + "DetailPts");
+  const bodyEl = document.getElementById(prefix + "DetailBody");
+  if (!c || c.status !== "ok" || !sc) {
+    ptsEl.textContent = "--";
+    bodyEl.innerHTML = `<div class="small-note">等待幣安 API 數據...</div>`;
+    return;
+  }
+  ptsEl.textContent = `${sc.pts.toFixed(1)} / ${sc.max} 分`;
+  ptsEl.className = "pill num " + pillClassForRatio(sc.ratio);
+
+  const distSup = ((c.price - sup) / sup) * 100;
+  const distMa30 = c.ma30_4h ? ((c.price - c.ma30_4h) / c.ma30_4h) * 100 : null;
+  const fundStr = c.fundingRate !== null ? `${c.fundingRate >= 0 ? "+" : ""}${c.fundingRate.toFixed(4)}%` : "--";
+  const oiStr = c.oiUsd ? `$${(c.oiUsd / 1e9).toFixed(2)}B` : "--";
+
+  bodyEl.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+      <div style="font-size:24px;font-weight:800" class="num">$${fmtNum(c.price, dec)}</div>
+      <div class="num ${c.chgPct >= 0 ? "up" : "down"}" style="font-size:14px;font-weight:700">${fmtPct(c.chgPct)} (24h)</div>
+    </div>
+    <div class="crypto-metrics">
+      <div class="metric-cell">
+        <div class="metric-k">距防守位 ($${fmtNum(sup, 0)})</div>
+        <div class="metric-v num ${distSup >= 0 ? "up" : "down"}">${fmtPct(distSup)}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-k">4H MA30 (${c.ma30_4h ? fmtNum(c.ma30_4h, dec) : "--"})</div>
+        <div class="metric-v num ${distMa30 >= 0 ? "up" : "down"}">${distMa30 !== null ? fmtPct(distMa30) : "--"}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-k">15m 結構形態</div>
+        <div class="metric-v ${c.hasHigherLow ? "up" : "down"}">${c.hasHigherLow ? "次低點抬高 HL" : "未見抬高"}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-k">1H / 15m RSI</div>
+        <div class="metric-v num">${c.rsi1h ? c.rsi1h.toFixed(1) : "--"} / ${c.rsi15m ? c.rsi15m.toFixed(1) : "--"}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-k">資金費率</div>
+        <div class="metric-v num ${c.fundingRate !== null && c.fundingRate <= 0.01 ? "up" : "flat"}">${fundStr}</div>
+      </div>
+      <div class="metric-cell">
+        <div class="metric-k">合約持倉量 OI</div>
+        <div class="metric-v num">${oiStr}</div>
+      </div>
+    </div>
+    <div class="small-note" style="margin-top:8px;">
+      轉強目標位：<strong>$${fmtNum(rec, 0)}</strong> ｜ 4H MA45：${c.ma45_4h ? fmtNum(c.ma45_4h, dec) : "--"} ｜ 4H MA60：${c.ma60_4h ? fmtNum(c.ma60_4h, dec) : "--"}
+    </div>
+  `;
+}
+
+function updateStatusDots() {
+  const wsDot = document.getElementById("wsDot");
+  wsDot.className = "dot " + (state.wsConnected ? "live" : (state.crypto.BTC.status === "ok" ? "warn" : "err"));
+  const mDot = document.getElementById("macroDot");
+  const okM = MACRO_DEFS.filter(d => state.macro[d.key]?.status === "ok" || state.macro[d.key]?.status === "manual").length;
+  mDot.className = "dot " + (okM === MACRO_DEFS.length ? "live" : okM > 0 ? "warn" : "err");
+}
+
+/* =========================================================
+   TradingView Official Widgets
+   ========================================================= */
+function loadTvMacroWidget() {
+  if (tvMacroLoaded) return;
+  tvMacroLoaded = true;
+  const container = document.getElementById("tvMacroTable");
+  container.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "tradingview-widget-container";
+  wrap.style.height = "100%"; wrap.style.width = "100%";
+  const inner = document.createElement("div");
+  inner.className = "tradingview-widget-container__widget";
+  wrap.appendChild(inner);
+
+  const script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js";
+  script.async = true;
+  script.textContent = JSON.stringify({
+    width: "100%", height: "100%",
+    symbolsGroups: [
+      {
+        name: "反向壓力源 (見頂回落=利多)",
+        symbols: [
+          { name: "TVC:DXY", displayName: "DXY 美元指數" },
+          { name: "TVC:US10Y", displayName: "US10Y 十年債息" },
+          { name: "TVC:US02Y", displayName: "US02Y 兩年債息" },
+          { name: "TVC:VIX", displayName: "VIX 恐慌指數" }
+        ]
+      },
+      {
+        name: "美股與幣股 (收腳翻紅=利多)",
+        symbols: [
+          { name: "NASDAQ:QQQ", displayName: "QQQ 那斯達克100" },
+          { name: "AMEX:IWM", displayName: "IWM 羅素2000" },
+          { name: "NASDAQ:MSTR", displayName: "MSTR 微策略" },
+          { name: "NASDAQ:COIN", displayName: "COIN Coinbase" },
+          { name: "NASDAQ:IBIT", displayName: "IBIT 貝萊德BTC ETF" }
+        ]
+      },
+      {
+        name: "加密大盤",
+        symbols: [
+          { name: "BINANCE:BTCUSDT.P", displayName: "BTC 永續" },
+          { name: "BINANCE:ETHUSDT.P", displayName: "ETH 永續" },
+          { name: "BINANCE:1000PEPEUSDT.P", displayName: "1000PEPE 永續" }
+        ]
+      }
+    ],
+    showSymbolLogo: true, isTransparent: true, colorTheme: "dark", locale: "zh_TW"
+  });
+  wrap.appendChild(script);
+  container.appendChild(wrap);
+}
+
+function loadTvChart(symbol, btnEl) {
+  currentTvSymbol = symbol;
+  if (btnEl) {
+    document.querySelectorAll("#tvChartBtns .seg-btn").forEach(b => b.classList.remove("active"));
+    btnEl.classList.add("active");
+  }
+  const container = document.getElementById("tvChartContainer");
+  container.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "tradingview-widget-container";
+  wrap.style.height = "100%"; wrap.style.width = "100%";
+  const script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+  script.async = true;
+  script.textContent = JSON.stringify({
+    autosize: true, symbol, interval: "15", timezone: "Asia/Taipei",
+    theme: "dark", style: "1", locale: "zh_TW",
+    hide_top_toolbar: false, hide_legend: false, save_image: false,
+    allow_symbol_change: true, support_host: "https://www.tradingview.com"
+  });
+  wrap.appendChild(script);
+  container.appendChild(wrap);
+  tvChartLoaded = true;
+}
+
+/* =========================================================
+   Modals & Navigation
+   ========================================================= */
+function switchTab(name, btn) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "instant" });
+  if (name === "macro") loadTvMacroWidget();
+  if (name === "crypto" && !tvChartLoaded) loadTvChart(currentTvSymbol);
+}
+
+function openChannelModal() {
+  document.getElementById("gasCodePreview").textContent = GAS_SCRIPT_TEMPLATE;
+  document.getElementById("chGasUrl").value = cfg.gasUrl || "";
+  document.getElementById("chTwelveKey").value = cfg.twelveKey || "";
+  document.getElementById("chFinnhubKey").value = cfg.finnhubKey || "";
+  document.getElementById("channelModal").classList.add("open");
+}
+
+async function copyGasCode() {
+  const btn = document.getElementById("copyGasBtn");
+  try {
+    await navigator.clipboard.writeText(GAS_SCRIPT_TEMPLATE);
+    btn.textContent = "✅ 已複製！請貼至 script.google.com";
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = GAS_SCRIPT_TEMPLATE;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    btn.textContent = "✅ 已複製！請貼至 script.google.com";
+  }
+  setTimeout(() => { btn.textContent = "📋 一鍵複製 Google Apps Script 程式碼"; }, 2600);
+}
+
+function saveChannels() {
+  cfg.gasUrl = document.getElementById("chGasUrl").value.trim();
+  cfg.twelveKey = document.getElementById("chTwelveKey").value.trim();
+  cfg.finnhubKey = document.getElementById("chFinnhubKey").value.trim();
+  saveCfgStorage();
+  closeModal("channelModal");
+  refreshAll(true);
+}
+
+function openSettings() {
+  document.getElementById("cfgBtcSupport").value = cfg.btcSupport;
+  document.getElementById("cfgBtcReclaim").value = cfg.btcReclaim;
+  document.getElementById("cfgEthSupport").value = cfg.ethSupport;
+  document.getElementById("cfgEthReclaim").value = cfg.ethReclaim;
+  document.getElementById("cfgInterval").value = String(cfg.intervalSec);
+  document.getElementById("settingsModal").classList.add("open");
+}
+
+function saveSettings() {
+  cfg.btcSupport = parseFloat(document.getElementById("cfgBtcSupport").value) || DEFAULT_CFG.btcSupport;
+  cfg.btcReclaim = parseFloat(document.getElementById("cfgBtcReclaim").value) || DEFAULT_CFG.btcReclaim;
+  cfg.ethSupport = parseFloat(document.getElementById("cfgEthSupport").value) || DEFAULT_CFG.ethSupport;
+  cfg.ethReclaim = parseFloat(document.getElementById("cfgEthReclaim").value) || DEFAULT_CFG.ethReclaim;
+  cfg.intervalSec = parseInt(document.getElementById("cfgInterval").value, 10) || 0;
+  saveCfgStorage();
+  closeModal("settingsModal");
+  setupAutoRefresh();
+  renderAll();
+}
+
+function resetDefaults() {
+  const keepChannels = { gasUrl: cfg.gasUrl, twelveKey: cfg.twelveKey, finnhubKey: cfg.finnhubKey };
+  cfg = { ...DEFAULT_CFG, ...keepChannels };
+  saveCfgStorage();
+  openSettings();
+}
+
+function openManual(key) {
+  const def = MACRO_DEFS.find(d => d.key === key);
+  const cur = state.macro[key] || {};
+  document.getElementById("manualKey").value = key;
+  document.getElementById("manualTitle").textContent = `手動校準：${def.key} (${def.name})`;
+  document.getElementById("manualPrice").value = cur.price ?? "";
+  document.getElementById("manualChg").value = cur.chgPct !== undefined && cur.chgPct !== null ? cur.chgPct.toFixed(2) : "";
+  const posPct = cur.rangePos !== undefined ? Math.round(cur.rangePos * 100) : 50;
+  document.getElementById("manualPos").value = posPct;
+  document.getElementById("manualPosVal").textContent = posPct + "%";
+  document.getElementById("manualModal").classList.add("open");
+}
+
+function saveManual() {
+  const key = document.getElementById("manualKey").value;
+  const price = parseFloat(document.getElementById("manualPrice").value);
+  const chgPct = parseFloat(document.getElementById("manualChg").value);
+  const rangePos = parseFloat(document.getElementById("manualPos").value) / 100;
+  if (isNaN(price) || isNaN(chgPct)) { alert("請輸入有效數字"); return; }
+  manualOverrides[key] = { price, chgPct, rangePos, updatedAt: Date.now() };
+  saveManualsStorage();
+  state.macro[key] = { price, chgPct, high: null, low: null, rangePos, slope3: 0, status: "manual", source: "手動", updatedAt: Date.now() };
+  closeModal("manualModal");
+  renderAll();
+}
+
+function clearManual() {
+  const key = document.getElementById("manualKey").value;
+  delete manualOverrides[key];
+  saveManualsStorage();
+  closeModal("manualModal");
+  refreshAll(true);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+
+/* =========================================================
+   Main Orchestrator
+   ========================================================= */
+async function refreshAll(showSpin = false) {
+  const btn = document.getElementById("refreshBtn");
+  if (showSpin) btn.classList.add("spinning");
+
+  await Promise.allSettled([
+    fetchBinanceCrypto("BTC", "BTCUSDT"),
+    fetchBinanceCrypto("ETH", "ETHUSDT"),
+    fetchAllMacro()
+  ]);
+
+  document.getElementById("lastUpdate").textContent = new Date().toTimeString().slice(0, 8);
+  renderAll();
+  if (showSpin) btn.classList.remove("spinning");
+}
+
+function setupAutoRefresh() {
+  if (autoTimer) clearInterval(autoTimer);
+  if (cfg.intervalSec > 0) autoTimer = setInterval(() => refreshAll(false), cfg.intervalSec * 1000);
+}
+
+// Boot
+renderAll();
+refreshAll(true);
+connectBinanceWS();
+setupAutoRefresh();
+</script>
+</body>
+</html>
